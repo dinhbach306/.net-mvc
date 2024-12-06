@@ -1,6 +1,7 @@
 ﻿using ECommerceShop.Context;
 using ECommerceShop.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECommerceShop.Controllers;
 
@@ -52,6 +53,33 @@ public class HangHoaController : Controller
             TenLoai = hH.MaLoaiNavigation.TenLoai,
             MoTa = hH.MoTa,
         });
+        return View(result);
+    }
+
+    public IActionResult Detail(int id)
+    {
+        var data = _dbContext.HangHoas
+            .Include(p => p.MaLoaiNavigation)
+            .SingleOrDefault(p => p.MaHh == id);
+        
+        if (data == null)
+        {
+            TempData["Message"] = $"Không tìm thấy sản phẩm {id}";
+            return Redirect("/404");
+        }
+
+        var result = new ChiTietHangHoaViewModel()
+        {
+            MaHangHoa = data.MaHh,
+            TenHangHoa = data.TenHh,
+            DonGia = data.DonGia ?? 0,
+            ChiTiet = data.MoTa ?? string.Empty,
+            Hinh = data?.Hinh ?? string.Empty,
+            MoTa = data?.MoTaDonVi ?? string.Empty,
+            TenLoai = data.MaLoaiNavigation.TenLoai,
+            SoLuongTon = 10,
+            DiemDanhGia = 5, 
+        };
         return View(result);
     }
 }
